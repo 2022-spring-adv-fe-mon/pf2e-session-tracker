@@ -16,7 +16,7 @@
         </mat-step>
         <mat-step label="Die Result">
             <mat-form-field class="die-roll-input" appearance="fill">
-                <input matInput type="number" name="die-roll" min="0" step="1" max="20" 
+                <input matInput type="number" name="die-roll" min="1" step="1" max="20" 
                         (keypress)="validateNumpadInput($event)" [(ngModel)]="dieRoll">
             </mat-form-field>
             <section class="numpad-input-container">

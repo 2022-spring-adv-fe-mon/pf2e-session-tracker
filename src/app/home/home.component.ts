@@ -17,7 +17,6 @@ export class HomeComponent implements OnInit {
   currentProfile: string = "";
   sessionsByProfile: SessionData[] = [];
   sinceLastSession = "Never";
-
   changeProfileButtonText = "Change Profile";
 
   constructor(private profileDialog: MatDialog, private appService: AppService) { }
@@ -53,7 +52,9 @@ export class HomeComponent implements OnInit {
     );  
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    this.appService.profiles = await this.appService.loadProfilesFromStorage();
+    this.appService.sessions = await this.appService.loadSessionsFromStorage();
     this.updateSelectedProfile();
   }
 

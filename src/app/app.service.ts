@@ -11,7 +11,7 @@ export class AppService {
 
   //TODO combine into singular service, session service
 
-  profiles: string[] = PROFILES;
+  profiles: string[] = [];
   sessions: SessionData[] = SESSIONS;
 
 
@@ -20,13 +20,20 @@ export class AppService {
   activeSessionCombats: CombatData[] = [];
   activeSessionRolls: RollData[] = [];
 
-
-  loadProfilesFromStorage(): void {
-    this.storage.get('profiles').subscribe((data) => {
-      if (data != undefined) {
-        console.log(data);
-      }
-    });
+  loadProfilesFromStorage(): Promise<string[]> {
+    return this.storage.get('profiles').toPromise() as Promise<string[]>;
+    // this.storage.get('profiles').subscribe((data) => {
+    //   if (data != undefined) {
+    //     console.log(data);
+    //     this.profiles = data as any[] ?? [];
+    //     return this.profiles;
+    //     this.loadSessionsFromStorage();
+    //   } else {
+    //     console.log("Error loading profiles from storage.");
+    //     this.profiles = [];
+    //     return [];
+    //   }
+    // });
   }
   
   saveProfilesToStorage(): void {
@@ -37,17 +44,18 @@ export class AppService {
     return this.profiles;
   }
 
-  loadSessionsFromStorage(): void {
-    this.storage.get('sessions').subscribe((data) => {
-      if (data != undefined) {
-        console.log(data);
-        this.sessions = data as any[] ?? [];
-        // Then it sorts it so most recent sessions are first
-        this.sessions.sort((a, b) => Date.parse(b.startTime) - Date.parse(a.startTime));
-      } else {
-        console.log("Error loading session data from local storage.");
-      }
-    });
+  loadSessionsFromStorage() : Promise<any> {
+    return this.storage.get('sessions').toPromise();
+    // this.storage.get('sessions').subscribe((data) => {
+    //   if (data != undefined) {
+    //     console.log(data);
+    //     this.sessions = data as any[] ?? [];
+    //     // Then it sorts it so most recent sessions are first
+    //     this.sessions.sort((a, b) => Date.parse(b.startTime) - Date.parse(a.startTime));
+    //   } else {
+    //     console.log("Error loading session data from local storage.");
+    //   }
+    // });
   }
 
   saveSessionsToStorage(): void {
@@ -69,6 +77,7 @@ export class AppService {
   selectProfile(selected: string) {
     this.profiles = [selected, ...this.profiles.filter((profile) => profile !== selected)];
     this.activeProfile = selected;
+    this.saveProfilesToStorage();
   }
 
   getSelectedProfile(): string {
@@ -109,8 +118,8 @@ export class AppService {
   }
 
   constructor(private storage: StorageMap) {
-    this.loadProfilesFromStorage();
-    this.loadSessionsFromStorage();
+    //this.loadProfilesFromStorage();
+    //this.loadSessionsFromStorage();
   }
 
 }
