@@ -12,7 +12,9 @@ import { Router } from '@angular/router';
 })
 export class PlayComponent implements OnInit {
 
-  character: string;
+  loadingData = true;
+
+  character: string = "";
   combats: CombatData[] = [];
   rolls: RollData[] = [];
 
@@ -21,13 +23,27 @@ export class PlayComponent implements OnInit {
   combatRounds = 0;
 
   constructor(private router: Router, private rollDialog: MatDialog, private appService: AppService) {
-    this.character = this.appService.getSelectedProfile();
-    this.appService.startNewSession();
-    //console.log(this.sessionStartTime);
-   }
+  }
 
   ngOnInit(): void {
-
+    this.appService.whenLoaded(() => {
+      let activeSession = this.appService.getActiveSession();
+      if (activeSession.length > 10) {
+        if (activeSession[0].character)
+          this.character = activeSession[0].character;
+        if (activeSession[0].combats)
+          this.combats = activeSession[0].combats;
+        if (activeSession[0].rolls)
+          this.rolls = activeSession[0].rolls;
+        console.log("Continued active session.");
+        console.log(activeSession[0]);
+      } else {
+        this.character = this.appService.getSelectedProfile();
+        this.appService.startNewSession();
+      }
+      this.loadingData = false;
+    });
+    
   }
 
   startCombat() {
@@ -74,7 +90,7 @@ export class PlayComponent implements OnInit {
     //  combats : this.combats,
     //  rolls : this.rolls
     //}
-    this.appService.saveActiveSessionToStorage();
+    this.appService.endActiveSession();
     this.router.navigate(["/"]);
   }
 

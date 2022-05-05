@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from "@angular/material/dialog";
-
+import { Observable } from 'rxjs';
+import { first } from 'rxjs/operators';
 import { AppService } from '../app.service';
 import { SelectProfileComponent } from '../select-profile/select-profile.component';
 import { SessionData, getTimestamp, sinceDate } from '../session-data';
@@ -12,6 +13,8 @@ import { SessionData, getTimestamp, sinceDate } from '../session-data';
 })
 export class HomeComponent implements OnInit {
 
+  loadingData = true;
+
   profiles: string[] = [];
 
   currentProfile: string = "";
@@ -22,7 +25,6 @@ export class HomeComponent implements OnInit {
   constructor(private profileDialog: MatDialog, private appService: AppService) { }
 
   updateSelectedProfile() {
-    // TODO this is getting called before data is loaded from storage
     this.profiles = this.appService.getProfiles();
     if (this.profiles.length != 0) {
       this.currentProfile = this.profiles[0];
@@ -52,10 +54,15 @@ export class HomeComponent implements OnInit {
     );  
   }
 
-  async ngOnInit() {
-    this.appService.profiles = await this.appService.loadProfilesFromStorage();
-    this.appService.sessions = await this.appService.loadSessionsFromStorage();
-    this.updateSelectedProfile();
+  loadData() {
+    
+  }
+
+  ngOnInit() {
+    this.appService.whenLoaded(() => {
+      this.updateSelectedProfile();
+      this.loadingData = false;
+    })
   }
 
 }

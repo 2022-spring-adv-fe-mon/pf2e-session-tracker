@@ -1,7 +1,10 @@
 <header>
     <h1>Pathfinder Session Tracker</h1>
 </header>
-<main>
+<main *ngIf="loadingData">
+    <h1>Loading Profiles...</h1>
+</main>
+<main *ngIf="!loadingData">
     <h2 *ngIf="profiles.length != 0">
         {{currentProfile}}
     </h2>
