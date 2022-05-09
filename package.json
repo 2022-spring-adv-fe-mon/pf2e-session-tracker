@@ -20,6 +20,8 @@
     "@angular/platform-browser": "~12.2.0",
     "@angular/platform-browser-dynamic": "~12.2.0",
     "@angular/router": "~12.2.0",
+    "@aws-sdk/client-dynamodb": "^3.87.0",
+    "@aws-sdk/util-dynamodb": "^3.87.0",
     "@ngx-pwa/local-storage": "^12.1.0",
     "pretty-ms": "^7.0.1",
     "rxjs": "~6.6.0",
