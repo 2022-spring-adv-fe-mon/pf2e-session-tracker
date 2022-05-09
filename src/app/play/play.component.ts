@@ -28,7 +28,7 @@ export class PlayComponent implements OnInit {
   ngOnInit(): void {
     this.appService.whenLoaded(() => {
       let activeSession = this.appService.getActiveSession();
-      if (activeSession.length > 10) {
+      if (activeSession.length > 0) {
         if (activeSession[0].character)
           this.character = activeSession[0].character;
         if (activeSession[0].combats)
