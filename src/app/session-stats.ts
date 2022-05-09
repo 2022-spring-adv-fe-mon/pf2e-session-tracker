@@ -1,7 +1,6 @@
 import { summaryFileName } from "@angular/compiler/src/aot/util";
 import { combineLatest } from "rxjs";
 import { CombatData, getDuration, RollData, SessionData, CHECKTYPES, RESULTS } from "./session-data";
-import { SessionService } from "./session.service";
 
 const OUTLIER_UPPER_THRESHHOLD = 15;
 const OUTLIER_LOWER_THRESHHOLD = 5;
