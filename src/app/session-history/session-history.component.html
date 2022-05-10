@@ -1,7 +1,9 @@
 <button mat-raised-button routerLink="/">Back</button>
 <mat-card *ngFor="let session of this.sessions | slice:0:listNumber; let i=index">
     <h2>{{sessionDate(session)}}</h2>
-    <div>Lasted {{sessionLength(session)}}</div>
+    <p>Lasted {{sessionLength(session)}}</p>
+    <p>{{session.combats.length}} combats</p>
+    <p>{{session.rolls.length}} rolls</p>
 </mat-card>
 <button mat-raised-button routerLink="/">Back</button>
 <button mat-raised-button (click)="showMoreHistory()" *ngIf="listNumber < this.sessions.length">Show More</button>

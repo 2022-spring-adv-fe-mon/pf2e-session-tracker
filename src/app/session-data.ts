@@ -1,3 +1,9 @@
+export const APP_NAME = "pf2e-session-tracker";
+
+export function getProfilesFromSessions(sessions: SessionData[]): string[] {
+    return [...new Set(sessions.map(session => session.character))];
+}
+
 export function getTimestamp(): string {
     let date = new Date().toISOString();
     //date = date.substring(0, date.indexOf("."))
@@ -143,7 +149,8 @@ export const CHECKTYPES: string[] = [
     'Society',
     'Stealth',
     'Survival',
-    'Thievery'
+    'Thievery',
+    'Other'
 ];
 
 export const RESULTS: string[] = [

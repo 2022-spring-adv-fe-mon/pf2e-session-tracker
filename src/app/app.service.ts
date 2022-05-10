@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { StorageMap } from '@ngx-pwa/local-storage';
+import { saveGameToCloud, loadGamesFromCloud } from './TcaCloudApi';
+
 import { Observable, of, from, BehaviorSubject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { PROFILES, SESSIONS } from './sample-session-data';
-import { CombatData, getTimestamp, RollData, SessionData } from './session-data';
+import { APP_NAME, CombatData, getProfilesFromSessions, getTimestamp, RollData, SessionData } from './session-data';
 import { calculateLongestSession, calculateMostRecentSession } from './session-stats';
 
 @Injectable({
@@ -19,20 +21,21 @@ export class AppService {
   profilesObservable: Observable<string[]> = of([]);
 
   sessionsLoaded = false;
-  sessions: SessionData[] = SESSIONS;
+  sessions: SessionData[] = [];
   sessionsObservable: Observable<SessionData[]> = of([]);
 
   activeSessionLoaded = false;
   activeSession: SessionData[] = [];
   activeSessionObservable: Observable<SessionData[]> = of([]);
 
+  activeEmail = "testEmail@testTestTest.com";
   activeProfile: string = "";
 
-  whenLoaded(f: Function) {
+  whenLoaded(fn: Function) {
     if (this.dataLoaded)
-      f();
+      fn();
     else
-      this.loadingCallbacks.push(f);
+      this.loadingCallbacks.push(fn);
   }
 
   runLoadingCallbacks() {
@@ -40,115 +43,129 @@ export class AppService {
     this.loadingCallbacks.forEach((fn) => fn());
   }
 
+  loadEmailFromStorage() {
+    let emailPromise = this.storage.get('email').toPromise() as Promise<string>;
+    return emailPromise.then((data) => {
+      if (data) {
+        this.activeEmail = data as string ?? "";
+        console.log("Loaded email: " + this.activeEmail);
+      } else {
+        console.log("Email not found in local storage");
+      }
+    });
+  }
+
   loadProfilesFromStorage() {
     let profilesPromise = this.storage.get('profiles').toPromise() as Promise<string[]>;
     return profilesPromise.then((data) => {
-      this.profiles = data as string[] ?? [];
-      if (this.profiles.length > 0)
-        this.activeProfile = this.profiles[0];
-      console.log("Profiles loaded: " + this.profiles.length);
-      console.log(this.profiles);
+      if (data) {
+        this.profiles = data as string[] ?? [];
+        if (this.profiles.length > 0)
+          this.activeProfile = this.profiles[0];
+        console.log("Profiles loaded: " + this.profiles.length);
+        console.log(this.profiles);
+      } else {
+        console.log("No profiles found in local storage.");
+      }
     });
-    // this.profilesObservable = this.storage.get('profiles') as Observable<string[]>;
-    // this.profilesObservable.pipe(first()).subscribe((data) => {
-    //   this.profiles = data as string[] ?? [];
-    //   if (this.profiles.length > 0)
-    //     this.activeProfile = this.profiles[0];
-    //   console.log("Loaded " + this.profiles.length + " profiles from storage.");
-    //   this.profilesLoaded = true;
-    // });
+  }
+
+  async loadSessionsFromCloud() {
+    //TODO fill in
+    if (this.activeEmail == "")
+      console.error("Cannot load sessions from cloud, no active email set.");
+    else {
+      const data = await loadGamesFromCloud(this.activeEmail, APP_NAME);
+      this.sessions = data as SessionData[] ?? [];
+      console.log("Loaded " + this.sessions.length + " sessions from cloud. Email : " + this.activeEmail);
+    }
   }
 
   loadSessionsFromStorage() {
     let sessionsPromise = this.storage.get('sessions').toPromise() as Promise<SessionData[]>;
     return sessionsPromise.then((data) => {
-      this.sessions = data as SessionData[] ?? [];
-      console.log("Sessions loaded: " + this.sessions.length);
-      console.log(this.sessions);
+      if (data) {
+        this.sessions = data as SessionData[] ?? [];
+        console.log("Sessions loaded: " + this.sessions.length);
+        console.log(this.sessions);
+      } else {
+        console.log("No sessions found in local storage.");
+      }
     });
-    // this.sessionsObservable = this.storage.get('sessions') as Observable<SessionData[]>;
-    // this.sessionsObservable.subscribe((data) => {
-    //   this.sessions = data as SessionData[] ?? [];
-    //   console.log("Loaded " + this.sessions.length + " sessions from storage.");
-    //   // Then it sorts it so most recent sessions are first
-    //   this.sessions.sort((a, b) => Date.parse(b.startTime) - Date.parse(a.startTime));
-    // });
-    // return this.sessionsObservable;
   }
 
   loadActiveSessionFromStorage() {
     let activeSessionPromise = this.storage.get('active-session').toPromise() as Promise<SessionData>;
     return activeSessionPromise.then((data) => {
-      this.activeSession[0] = data as SessionData ?? this.activeSession;
-      console.log("Active session loaded.")
-      console.log(this.activeSession[0]);
+      if (data) {
+        this.activeSession[0] = data as SessionData ?? [];
+        console.log("Active session loaded.")
+        console.log(this.activeSession[0]);
+      } else {
+        console.log("No active session found in storage.")
+      }
     });
-  }
-
-  handleError<T>(methodName: string, result? : T) {
-    return (error: any): Observable<T> => {
-      console.error(error);
-      console.log(methodName + " encountered an error. " + error.message);
-
-      return of(result as T);
-    };
   }
 
   async loadDataFromStorage() {
     await this.loadActiveSessionFromStorage();
     await this.loadSessionsFromStorage();
-    await this.loadProfilesFromStorage();
+    //await this.loadProfilesFromStorage();
+    this.profiles = getProfilesFromSessions(this.sessions);
+    console.log("Active profile: " + this.activeProfile);
     this.dataLoaded = true;
     this.runLoadingCallbacks();
   }
 
-  // loadDataFromStorage() {
-  //   this.loadActiveSessionFromStorage().then(() => {
-  //     let profilesPromise = this.storage.get('profiles').toPromise() as Promise<string[]>;
-  //     profilesPromise.then((data) => {
-  //       this.profiles = data as string[] ?? [];
-  //       if (this.profiles.length > 0)
-  //         this.activeProfile = this.profiles[0];
-  //       console.log("Profiles loaded: " + this.profiles.length);
-  //       console.log(this.profiles);
-  //     }).then(() => {
-  //       let sessionsPromise = this.storage.get('sessions').toPromise() as Promise<SessionData[]>;
-  //       sessionsPromise.then((data) => {
-  //         this.sessions = data as SessionData[] ?? [];
-  //         console.log("Sessions loaded: " + this.sessions.length);
-  //         console.log(this.sessions);
-  //       }).then(() => {
-  //         this.runLoadingCallbacks();
-  //         this.dataLoaded = true;
-  //       });
-  //     })
-  //   });
-  // }
+  async loadData() {
+    await this.loadEmailFromStorage();
+    console.log("Active email: " + this.activeEmail);
+    await this.loadActiveSessionFromStorage();
+    await this.loadSessionsFromCloud();
+    this.profiles = getProfilesFromSessions(this.sessions);
+    this.dataLoaded = true;
+    this.runLoadingCallbacks();
+  }
 
   saveProfilesToStorage(): void {
     this.storage.set('profiles', this.profiles).subscribe(() => {});
   }
 
-  saveSessionsToStorage(): void {
-    this.storage.set('sessions', this.sessions).subscribe(() => {});
+  saveSessionsToStorage(callback?: Function) {
+    let sub = this.storage.set('sessions', this.sessions).subscribe(() => {
+      console.log("Saved sessions to local storage.");
+      sub.unsubscribe();
+      if (typeof callback === "function")
+        callback();
+    });
+    
+  }
+
+  async saveNewSessionToCloud(session: SessionData) {
+    if (this.activeEmail != "") {
+      await saveGameToCloud(this.activeEmail, APP_NAME, session.endTime, session);
+      console.log("Session saved to cloud, email: " + this.activeEmail);
+    } else {
+      console.error("Cannot save to cloud, no active email set.");
+    }
   }
 
   saveActiveSessionToStorage() {
     let sub = this.storage.set('active-session', this.activeSession[0]).subscribe(() => {
       console.log("Saved active session progress.");
       sub.unsubscribe();
-    })
+    });
   }
 
-  endActiveSession() {
+  async endActiveSession() {
+    const afterSave = () => this.activeSession = [];
+
     this.activeSession[0].endTime = getTimestamp();
     this.sessions = [this.activeSession[0], ...this.sessions];
-    let sub = this.storage.set('sessions', this.sessions).subscribe(() => {
-      console.log("Saved new session to storage.");
-      sub.unsubscribe();
-    });
 
-    this.activeSession = [];
+    // TODO change to cloud
+    // if accepted, delete activeSession data
+    this.saveSessionsToStorage(afterSave);
   }
   
   getProfiles(): string[] {
@@ -178,8 +195,9 @@ export class AppService {
   }
 
   getSelectedProfile(): string {
-    this.activeProfile = this.profiles[0];
-    return this.profiles[0];
+    if (this.profiles.length > 0) 
+      this.activeProfile = this.profiles[0];
+    return this.activeProfile;
   }
 
   startNewSession(): void {
@@ -187,13 +205,12 @@ export class AppService {
       character : this.activeProfile,
       startTime : getTimestamp(),
       endTime : "",
-      rolls : [],
-      combats : []
+      rolls : [] as RollData[],
+      combats : [] as CombatData[]
     };
     this.activeSession[0] = newSession;
     this.saveActiveSessionToStorage();
   }
-
 
   //TODO make a method to store active combat in storage?
   
@@ -203,7 +220,7 @@ export class AppService {
   }
 
   addRoll(roll: RollData): void {
-    console.log(roll);
+    console.log("Added roll: " + roll);
     console.log(this.activeSession[0]);
     this.activeSession[0].rolls = [roll, ...this.activeSession[0].rolls];
     this.saveActiveSessionToStorage();

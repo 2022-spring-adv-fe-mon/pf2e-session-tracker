@@ -39,12 +39,18 @@ export class PlayComponent implements OnInit {
         console.log(activeSession[0]);
       } else {
         this.character = this.appService.getSelectedProfile();
-        this.appService.startNewSession();
+        if (this.character == "") {
+          console.log("No active profile found, returning to home.");
+          this.router.navigate(["/"]);
+        } else {
+          this.appService.startNewSession();
+        }
       }
       this.loadingData = false;
     });
-    
   }
+
+  // TODO function that calls saveActiveSession whenever any data changes.
 
   startCombat() {
     this.inCombat = true;
@@ -65,6 +71,7 @@ export class PlayComponent implements OnInit {
       rounds : this.combatRounds
     }
     this.appService.addCombat(newCombat);
+    // TODO call saveActiveSessionToStorage
   }
 
   openDieRoll() {

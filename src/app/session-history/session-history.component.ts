@@ -9,6 +9,8 @@ import { getFormattedDuration, getFormattedDurationOf, SessionData } from '../se
 })
 export class SessionHistoryComponent implements OnInit {
 
+  loadingData = true;
+
   profile: string = "";
   sessions: SessionData[] = [];
   listNumber: number = 5;
@@ -16,8 +18,11 @@ export class SessionHistoryComponent implements OnInit {
   constructor(private appService: AppService) { }
 
   ngOnInit(): void {
-    this.profile = this.appService.getSelectedProfile();
-    this.sessions = this.appService.getSessions(this.profile);
+    this.appService.whenLoaded(() => {
+      this.profile = this.appService.getSelectedProfile();
+      this.sessions = this.appService.getSessions(this.profile);
+      this.loadingData = false;
+    });
   }
 
   sessionDate(session: SessionData): string {
