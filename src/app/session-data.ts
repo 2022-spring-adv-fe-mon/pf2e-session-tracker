@@ -112,7 +112,7 @@ export interface SessionData extends Timeable {
     combats: CombatData[];
     rolls: RollData[];
 }
-  
+
 export interface CombatData extends Timeable {
     startTime: string;
     endTime: string;
@@ -153,6 +153,8 @@ export const CHECKTYPES: string[] = [
     'Other'
 ];
 
+
+// TODO change to object?  RESULTS.CRIT_SUCCESS, RESULTS.SUCCESS
 export const RESULTS: string[] = [
     'Critical Success', 'Success', 'Failure', 'Critical Failure'
 ];

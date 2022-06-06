@@ -87,7 +87,7 @@ export function calculateSessionCombatRolls(session: SessionData): number {
 export function calculateSessionRollOutliers(session: SessionData): RollData[] {
     return session.rolls.filter((roll) => 
         (roll.checkResult == RESULTS[0] && roll.dieRoll <= OUTLIER_LOWER_THRESHHOLD) ||
-        (roll.checkResult == RESULTS[4] && roll.dieRoll >= OUTLIER_UPPER_THRESHHOLD));
+        (roll.checkResult == RESULTS[3] && roll.dieRoll >= OUTLIER_UPPER_THRESHHOLD));
 }
 
 // TODO make this not an array?
