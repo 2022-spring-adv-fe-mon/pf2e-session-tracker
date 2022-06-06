@@ -13,6 +13,14 @@ import { calculateLongestSession, calculateMostRecentSession } from './session-s
 })
 export class AppService {
 
+  // TODO add charts of statistics 
+  // chart js, chart js plugin datalabels, ng2 chart
+
+  // TODO save CURRENT SESSION DATA in local storage
+  // save completed sessions in cloud
+  // add auth?
+  // amplify
+
   dataLoaded = false;
   loadingCallbacks: Function[] = [];
 
@@ -31,6 +39,11 @@ export class AppService {
   activeEmail = "testEmail@testTestTest.com";
   activeProfile: string = "";
 
+  /**
+   * Adds a given function to call when data has loaded 
+   * from cloud and local storage
+   * @param fn 
+   */
   whenLoaded(fn: Function) {
     if (this.dataLoaded)
       fn();
@@ -71,7 +84,6 @@ export class AppService {
   }
 
   async loadSessionsFromCloud() {
-    //TODO fill in
     if (this.activeEmail == "")
       console.error("Cannot load sessions from cloud, no active email set.");
     else {
